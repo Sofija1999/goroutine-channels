@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"time"
+	"sync"
 )
+
+var wg sync.WaitGroup
 
 func main() {
 
@@ -23,17 +25,20 @@ func main() {
 
 	ch := make(chan string)
 
+	wg.Add(10)
+
 	for _, website := range websites {
 		go checkSite(website, ch)
 	}
 
-	time.Sleep(3* time.Second)
+	wg.Wait()
 
 }
 
 func checkSite(link string, ch chan string) {
 
 	_, err := http.Get(link)
+	wg.Done()
 	
 	if err!=nil {
 		fmt.Println(link, "The site is unavailable")
@@ -43,4 +48,5 @@ func checkSite(link string, ch chan string) {
 
 	fmt.Println(link, "The site is available!")
 	ch <- link
+	
 }
