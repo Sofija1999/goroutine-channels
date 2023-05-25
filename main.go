@@ -23,7 +23,7 @@ func main() {
 		"https://www.dm.rs/",
 	}
 
-	ch := make(chan string)
+	ch := make(chan string, 10)
 
 	wg.Add(10)
 
@@ -32,7 +32,12 @@ func main() {
 	}
 
 	wg.Wait()
+	close(ch)
 
+	for msg := range ch{
+		fmt.Println(msg)
+	}
+	
 }
 
 func checkSite(link string, ch chan string) {
@@ -41,12 +46,10 @@ func checkSite(link string, ch chan string) {
 	wg.Done()
 	
 	if err!=nil {
-		fmt.Println(link, "The site is unavailable")
-		ch <- link
+		ch <- link + " The site is unavailable"
 		return
 	}
 
-	fmt.Println(link, "The site is available!")
-	ch <- link
+	ch <- link + "The site is available!"
 	
 }
